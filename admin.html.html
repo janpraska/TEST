@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – fein und blumig</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --rose-pale:  #faf0f0;
+      --rose-soft:  #f2d5d5;
+      --rose-mid:   #d9a0a0;
+      --rose-deep:  #b56b6b;
+      --rose-dark:  #7a3f3f;
+      --cream:      #fdf8f4;
+      --bark:       #3a2e2e;
+      --bark-light: #6b5555;
+      --white:      #ffffff;
+      --green:      #4a7a5a;
+      --green-light:#e8f4ed;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Jost', sans-serif; font-weight: 300;
+      background: var(--cream); color: var(--bark);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      background: var(--rose-pale);
+      padding: 2rem;
+    }
+    .login-box {
+      background: var(--white); padding: 3rem;
+      border-radius: 4px; width: 100%; max-width: 400px;
+      box-shadow: 0 8px 32px rgba(90,40,40,0.1);
+      text-align: center;
+    }
+    .login-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-style: italic;
+      color: var(--bark); margin-bottom: 0.3rem;
+    }
+    .login-sub {
+      font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--rose-mid); margin-bottom: 2rem;
+    }
+    .login-label {
+      display: block; font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--bark-light);
+      margin-bottom: 0.4rem; text-align: left;
+    }
+    .login-input {
+      width: 100%; padding: 0.85rem 1rem; margin-bottom: 1rem;
+      border: 1px solid var(--rose-soft); border-radius: 2px;
+      background: var(--cream); font-family: 'Jost', sans-serif;
+      font-size: 0.9rem; color: var(--bark); outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: var(--rose-deep); }
+    .login-btn {
+      width: 100%; padding: 0.9rem;
+      background: var(--rose-deep); color: white; border: none;
+      border-radius: 2px; font-family: 'Jost', sans-serif;
+      font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .login-btn:hover { background: var(--rose-dark); }
+    .login-error {
+      margin-top: 0.8rem; font-size: 0.82rem;
+      color: var(--rose-deep); display: none;
+    }
+
+    /* ── ADMIN LAYOUT ── */
+    #admin-screen { display: none; }
+    .admin-header {
+      background: var(--bark); padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .admin-header-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-style: italic; color: var(--rose-pale);
+    }
+    .admin-header-right { display: flex; align-items: center; gap: 1rem; }
+    .admin-header-tag {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--rose-mid); border: 1px solid var(--rose-dark);
+      padding: 0.2rem 0.6rem; border-radius: 2px;
+    }
+    .logout-btn {
+      background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6); padding: 0.4rem 1rem;
+      border-radius: 2px; cursor: pointer; font-family: 'Jost', sans-serif;
+      font-size: 0.75rem; letter-spacing: 0.1em; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: white; color: white; }
+
+    .admin-body {
+      display: grid; grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      background: var(--white); border-right: 1px solid var(--rose-soft);
+      padding: 1.5rem 0;
+    }
+    .sidebar-section-label {
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--rose-mid); padding: 0 1.5rem; margin-bottom: 0.4rem;
+      margin-top: 1.2rem;
+    }
+    .sidebar-section-label:first-child { margin-top: 0; }
+    .sidebar-btn {
+      display: flex; align-items: center; gap: 0.6rem;
+      width: 100%; padding: 0.7rem 1.5rem;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Jost', sans-serif; font-size: 0.82rem;
+      color: var(--bark-light); text-align: left;
+      transition: background 0.15s, color 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar-btn:hover { background: var(--rose-pale); color: var(--bark); }
+    .sidebar-btn.active {
+      background: var(--rose-pale); color: var(--rose-deep);
+      border-left-color: var(--rose-deep);
+    }
+    .sidebar-icon { font-size: 1rem; flex-shrink: 0; }
+
+    /* Main content */
+    .admin-main { padding: 2.5rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-style: italic; font-weight: 400;
+      color: var(--bark); margin-bottom: 0.3rem;
+    }
+    .panel-sub {
+      font-size: 0.8rem; color: var(--bark-light); margin-bottom: 2rem;
+    }
+
+    /* Form elements */
+    .field-group { margin-bottom: 1.5rem; }
+    .field-label {
+      display: block; font-size: 0.7rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--bark-light); margin-bottom: 0.4rem;
+    }
+    .field-hint {
+      font-size: 0.72rem; color: var(--rose-mid); margin-bottom: 0.4rem;
+      display: block;
+    }
+    .field-input, .field-textarea, .field-select {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1px solid var(--rose-soft); border-radius: 2px;
+      background: var(--cream); font-family: 'Jost', sans-serif;
+      font-size: 0.88rem; color: var(--bark); outline: none;
+      transition: border-color 0.2s;
+    }
+    .field-input:focus, .field-textarea:focus, .field-select:focus {
+      border-color: var(--rose-deep);
+    }
+    .field-textarea { min-height: 100px; resize: vertical; }
+    .field-select { cursor: pointer; }
+
+    /* Grid for opening hours */
+    .zeiten-grid {
+      display: grid; grid-template-columns: 140px 1fr 1fr 1fr 1fr auto; gap: 0.5rem;
+      align-items: center; margin-bottom: 0.5rem;
+    }
+    .zeiten-grid .day-label {
+      font-size: 0.82rem; color: var(--bark);
+    }
+
+    /* Image upload area */
+    .image-upload-area {
+      border: 2px dashed var(--rose-soft); border-radius: 4px;
+      padding: 2rem; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--cream); position: relative;
+    }
+    .image-upload-area:hover { border-color: var(--rose-deep); background: var(--rose-pale); }
+    .image-upload-area input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+    }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .upload-text { font-size: 0.82rem; color: var(--bark-light); }
+    .upload-hint { font-size: 0.72rem; color: var(--rose-mid); margin-top: 0.3rem; }
+    .image-preview {
+      width: 100%; max-height: 200px; object-fit: cover;
+      border-radius: 2px; margin-top: 1rem; display: none;
+    }
+
+    /* Event cards */
+    .event-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+    .event-card {
+      background: var(--white); border: 1px solid var(--rose-soft);
+      border-radius: 2px; padding: 1.2rem 1.5rem;
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: start;
+    }
+    .event-card-title { font-size: 0.88rem; font-weight: 500; color: var(--bark); }
+    .event-card-date { font-size: 0.78rem; color: var(--rose-deep); margin-top: 0.2rem; }
+    .event-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--rose-mid); font-size: 1rem; padding: 0.2rem;
+      transition: color 0.2s; align-self: center;
+    }
+    .event-remove:hover { color: var(--rose-deep); }
+    .add-event-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; border: 1px dashed var(--rose-mid);
+      background: none; border-radius: 2px; cursor: pointer;
+      font-family: 'Jost', sans-serif; font-size: 0.8rem; color: var(--bark-light);
+      transition: all 0.2s;
+    }
+    .add-event-btn:hover { border-color: var(--rose-deep); color: var(--rose-deep); }
+
+    /* Two col layout */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* Save bar */
+    .save-bar {
+      position: sticky; bottom: 0;
+      background: rgba(253,248,244,0.95); backdrop-filter: blur(8px);
+      border-top: 1px solid var(--rose-soft);
+      padding: 1rem 2.5rem; margin: 2rem -2.5rem -2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .save-hint { font-size: 0.78rem; color: var(--bark-light); }
+    .save-btn {
+      padding: 0.75rem 2rem; background: var(--rose-deep); color: white;
+      border: none; border-radius: 2px; cursor: pointer;
+      font-family: 'Jost', sans-serif; font-size: 0.8rem;
+      letter-spacing: 0.12em; text-transform: uppercase; transition: background 0.2s;
+    }
+    .save-btn:hover { background: var(--rose-dark); }
+    .save-btn.saved { background: var(--green); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+      background: var(--bark); color: var(--cream);
+      padding: 0.9rem 1.5rem; border-radius: 2px;
+      font-size: 0.82rem; display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+    }
+    .toast.show { display: block; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Preview link */
+    .preview-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--rose-deep); text-decoration: none;
+      border: 1px solid var(--rose-soft); padding: 0.4rem 0.9rem;
+      border-radius: 2px; transition: all 0.2s;
+    }
+    .preview-link:hover { background: var(--rose-pale); border-color: var(--rose-mid); }
+
+    /* Password change */
+    .danger-zone {
+      margin-top: 3rem; padding-top: 2rem;
+      border-top: 1px solid var(--rose-soft);
+    }
+    .danger-title {
+      font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--rose-deep); margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .admin-body { grid-template-columns: 1fr; }
+      .admin-sidebar { display: flex; overflow-x: auto; padding: 0.5rem; border-right: none; border-bottom: 1px solid var(--rose-soft); }
+      .sidebar-section-label { display: none; }
+      .sidebar-btn { flex-shrink: 0; border-left: none; border-bottom: 2px solid transparent; padding: 0.6rem 1rem; white-space: nowrap; }
+      .sidebar-btn.active { border-left-color: transparent; border-bottom-color: var(--rose-deep); }
+      .two-col, .three-col, .event-card { grid-template-columns: 1fr; }
+      .zeiten-grid { grid-template-columns: 90px 1fr 1fr; gap: 0.4rem; }
+      .zeiten-grid .pm-fields { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <p class="login-logo">fein und blumig</p>
+    <p class="login-sub">Admin-Bereich</p>
+    <label class="login-label" for="pw-input">Passwort</label>
+    <input id="pw-input" type="password" class="login-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') doLogin()" autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()">Anmelden</button>
+    <p class="login-error" id="login-error">Falsches Passwort. Bitte erneut versuchen.</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <header class="admin-header">
+    <span class="admin-header-logo">fein und blumig</span>
+    <div class="admin-header-right">
+      <span class="admin-header-tag">Admin</span>
+      <a href="fein-und-blumig.html" target="_blank" class="preview-link">🌸 Vorschau</a>
+      <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <p class="sidebar-section-label">Inhalte</p>
+      <button class="sidebar-btn active" onclick="showPanel('oeffnungszeiten', this)">
+        <span class="sidebar-icon">🕐</span> Öffnungszeiten
+      </button>
+      <button class="sidebar-btn" onclick="showPanel('kontakt', this)">
+        <span class="sidebar-icon">📍</span> Kontakt & Adresse
+      </button>
+      <button class="sidebar-btn" onclick="showPanel('texte', this)">
+        <span class="sidebar-icon">✏️</span> Texte
+      </button>
+      <button class="sidebar-btn" onclick="showPanel('bilder', this)">
+        <span class="sidebar-icon">🖼️</span> Bilder
+      </button>
+      <button class="sidebar-btn" onclick="showPanel('events', this)">
+        <span class="sidebar-icon">🌷</span> Saisonales & Events
+      </button>
+      <p class="sidebar-section-label">Rechtliches</p>
+      <button class="sidebar-btn" onclick="showPanel('impressum', this)">
+        <span class="sidebar-icon">📄</span> Impressum
+      </button>
+      <button class="sidebar-btn" onclick="showPanel('dsgvo', this)">
+        <span class="sidebar-icon">🔒</span> Datenschutz
+      </button>
+      <p class="sidebar-section-label">Einstellungen</p>
+      <button class="sidebar-btn" onclick="showPanel('passwort', this)">
+        <span class="sidebar-icon">🔑</span> Passwort
+      </button>
+    </aside>
+
+    <!-- PANELS -->
+    <main class="admin-main">
+
+      <!-- ÖFFNUNGSZEITEN -->
+      <div class="panel active" id="panel-oeffnungszeiten">
+        <h1 class="panel-title">Öffnungszeiten</h1>
+        <p class="panel-sub">Wird im Banner unter dem Hero und auf der Öffnungszeiten-Seite angezeigt.</p>
+        <div id="zeiten-fields"></div>
+        <div class="save-bar">
+          <span class="save-hint">Änderungen werden auf der Website sofort sichtbar.</span>
+          <button class="save-btn" onclick="savePanel('oeffnungszeiten')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- KONTAKT -->
+      <div class="panel" id="panel-kontakt">
+        <h1 class="panel-title">Kontakt & Adresse</h1>
+        <p class="panel-sub">Angaben für Footer, Öffnungszeiten-Seite und Kontaktbereich.</p>
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label">Telefon</label>
+            <input type="tel" class="field-input" id="k-telefon" placeholder="+49 1234 567890" autocomplete="tel"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">E-Mail</label>
+            <input type="email" class="field-input" id="k-email" placeholder="info@feinundblumig.de" autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Straße & Hausnummer</label>
+          <input type="text" class="field-input" id="k-strasse" placeholder="Hofstraße 1"/>
+        </div>
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label">PLZ</label>
+            <input type="text" class="field-input" id="k-plz" placeholder="24800"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Ort</label>
+            <input type="text" class="field-input" id="k-ort" placeholder="Steinfeld"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Google Maps Einbettungs-URL</label>
+          <span class="field-hint">Maps → Teilen → Karte einbetten → den src-Link kopieren</span>
+          <input type="text" class="field-input" id="k-maps" placeholder="https://www.google.com/maps/embed?..."/>
+        </div>
+        <div class="save-bar">
+          <span class="save-hint">Änderungen werden auf der Website sofort sichtbar.</span>
+          <button class="save-btn" onclick="savePanel('kontakt')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- TEXTE -->
+      <div class="panel" id="panel-texte">
+        <h1 class="panel-title">Texte</h1>
+        <p class="panel-sub">Willkommenstext und Ladeninfos bearbeiten.</p>
+        <div class="field-group">
+          <label class="field-label">Willkommenstext</label>
+          <textarea class="field-textarea" id="t-willkommen" style="min-height:130px;"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Über den Laden</label>
+          <textarea class="field-textarea" id="t-laden" style="min-height:130px;"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Über das Team</label>
+          <textarea class="field-textarea" id="t-team" style="min-height:100px;"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Über unsere Ware</label>
+          <textarea class="field-textarea" id="t-ware" style="min-height:100px;"></textarea>
+        </div>
+        <div class="save-bar">
+          <span class="save-hint">Änderungen werden auf der Website sofort sichtbar.</span>
+          <button class="save-btn" onclick="savePanel('texte')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- BILDER -->
+      <div class="panel" id="panel-bilder">
+        <h1 class="panel-title">Bilder</h1>
+        <p class="panel-sub">Bilder hochladen und als URL eintragen. Tipp: kostenloser Upload z. B. über <a href="https://imgur.com" target="_blank" style="color:var(--rose-deep);">imgur.com</a> oder <a href="https://cloudinary.com" target="_blank" style="color:var(--rose-deep);">Cloudinary</a>.</p>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label">Willkommen-Bild (Hauptbild)</label>
+            <input type="text" class="field-input" id="img-willkommen" placeholder="https://...jpg"/>
+            <img class="image-preview" id="prev-willkommen" alt="Vorschau Willkommen"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Laden – Hauptbild (Hof)</label>
+            <input type="text" class="field-input" id="img-laden-gross" placeholder="https://...jpg"/>
+            <img class="image-preview" id="prev-laden-gross" alt="Vorschau Laden"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Laden – kleines Bild (Innen)</label>
+            <input type="text" class="field-input" id="img-laden-klein" placeholder="https://...jpg"/>
+            <img class="image-preview" id="prev-laden-klein" alt="Vorschau Laden klein"/>
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--rose-soft);margin:1.5rem 0;"/>
+        <p class="panel-sub" style="margin-bottom:1rem;">Galerie-Bilder (bis zu 7 Bilder)</p>
+        <div class="three-col" id="galerie-inputs"></div>
+
+        <div class="save-bar">
+          <span class="save-hint">Bild-URLs eintragen – die Vorschau aktualisiert sich automatisch.</span>
+          <button class="save-btn" onclick="savePanel('bilder')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="panel" id="panel-events">
+        <h1 class="panel-title">Saisonales & Events</h1>
+        <p class="panel-sub">Aktuelle Aktionen, saisonale Angebote oder besondere Termine eintragen. Diese erscheinen als Hinweis-Banner auf der Website.</p>
+
+        <div class="event-list" id="event-list"></div>
+        <button class="add-event-btn" onclick="addEvent()">+ Neues Event / Angebot</button>
+
+        <div class="save-bar">
+          <span class="save-hint">Leere Events werden nicht angezeigt.</span>
+          <button class="save-btn" onclick="savePanel('events')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- IMPRESSUM -->
+      <div class="panel" id="panel-impressum">
+        <h1 class="panel-title">Impressum</h1>
+        <p class="panel-sub">Pflichtangaben gemäß § 5 TMG. Bitte vollständig ausfüllen.</p>
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label">Name / Firma</label>
+            <input type="text" class="field-input" id="imp-name" placeholder="Inken Lausen"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Telefon</label>
+            <input type="tel" class="field-input" id="imp-telefon" placeholder="+49 ..."/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Vollständige Adresse</label>
+          <input type="text" class="field-input" id="imp-adresse" placeholder="Hofstraße 1, 24800 Steinfeld"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">E-Mail</label>
+          <input type="email" class="field-input" id="imp-email" placeholder="info@feinundblumig.de"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Zusätzliche Angaben (optional)</label>
+          <span class="field-hint">z. B. Steuernummer, Berufsbezeichnung, zuständige Aufsichtsbehörde</span>
+          <textarea class="field-textarea" id="imp-extra"></textarea>
+        </div>
+        <div class="save-bar">
+          <span class="save-hint">Wird im Impressum-Modal auf der Website angezeigt.</span>
+          <button class="save-btn" onclick="savePanel('impressum')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- DSGVO -->
+      <div class="panel" id="panel-dsgvo">
+        <h1 class="panel-title">Datenschutz</h1>
+        <p class="panel-sub">Angaben für die Datenschutzerklärung.</p>
+        <div class="field-group">
+          <label class="field-label">Verantwortliche Person (Name + Adresse)</label>
+          <textarea class="field-textarea" id="ds-verantwortlich" style="min-height:80px;"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Kontakt für Datenschutzanfragen (E-Mail)</label>
+          <input type="email" class="field-input" id="ds-email" placeholder="datenschutz@feinundblumig.de"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Hosting-Anbieter</label>
+          <span class="field-hint">z. B. "Netlify Inc., 44 Montgomery Street, San Francisco, CA 94104, USA"</span>
+          <input type="text" class="field-input" id="ds-hosting" placeholder="Netlify, IONOS, ..."/>
+        </div>
+        <div class="save-bar">
+          <span class="save-hint">Wird im Datenschutz-Modal auf der Website angezeigt.</span>
+          <button class="save-btn" onclick="savePanel('dsgvo')">Speichern</button>
+        </div>
+      </div>
+
+      <!-- PASSWORT -->
+      <div class="panel" id="panel-passwort">
+        <h1 class="panel-title">Passwort ändern</h1>
+        <p class="panel-sub">Das Passwort wird verschlüsselt im Browser gespeichert.</p>
+        <div style="max-width: 400px;">
+          <div class="field-group">
+            <label class="field-label">Aktuelles Passwort</label>
+            <input type="password" class="field-input" id="pw-current" autocomplete="current-password"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Neues Passwort</label>
+            <input type="password" class="field-input" id="pw-new" autocomplete="new-password"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Neues Passwort wiederholen</label>
+            <input type="password" class="field-input" id="pw-repeat" autocomplete="new-password"/>
+          </div>
+          <button class="save-btn" onclick="changePassword()" style="width:auto;">Passwort ändern</button>
+          <p id="pw-msg" style="margin-top:0.8rem;font-size:0.82rem;display:none;"></p>
+        </div>
+        <div class="danger-zone">
+          <p class="danger-title">⚠ Alle Inhalte zurücksetzen</p>
+          <p style="font-size:0.82rem;color:var(--bark-light);margin-bottom:1rem;">Setzt alle gespeicherten Inhalte auf die Standard-Platzhalter zurück. Nicht rückgängig zu machen.</p>
+          <button onclick="resetAll()" style="padding:0.6rem 1.2rem;background:none;border:1px solid var(--rose-deep);color:var(--rose-deep);border-radius:2px;cursor:pointer;font-family:'Jost',sans-serif;font-size:0.8rem;transition:all 0.2s;" onmouseover="this.style.background='var(--rose-pale)'" onmouseout="this.style.background='none'">Alles zurücksetzen</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Gespeichert!</div>
+
+<script>
+  // ── DEFAULT PASSWORD (hashed simply via btoa – change after first login!) ──
+  const DEFAULT_PW_HASH = btoa('blumig2024'); // Change this!
+
+  function getPwHash() {
+    return localStorage.getItem('fab_pw') || DEFAULT_PW_HASH;
+  }
+
+  function doLogin() {
+    const input = document.getElementById('pw-input').value;
+    if (btoa(input) === getPwHash()) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+
+  function doLogout() {
+    document.getElementById('admin-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('pw-input').value = '';
+  }
+
+  // ── NAVIGATION ──
+  function showPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  // ── OPENING HOURS ──
+  const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+
+  function buildZeitenFields() {
+    const saved = JSON.parse(localStorage.getItem('fab_zeiten') || '{}');
+    const container = document.getElementById('zeiten-fields');
+    container.innerHTML = '';
+    // Header
+    container.insertAdjacentHTML('afterbegin', `
+      <div class="zeiten-grid" style="margin-bottom:0.3rem;">
+        <span></span>
+        <span style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--rose-mid);">Vormittag von</span>
+        <span style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--rose-mid);">bis</span>
+        <span style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--rose-mid);">Nachmittag von</span>
+        <span style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--rose-mid);">bis</span>
+        <span></span>
+      </div>`);
+    DAYS.forEach(day => {
+      const d = saved[day] || {};
+      const closed = d.geschlossen || false;
+      const row = document.createElement('div');
+      row.className = 'zeiten-grid';
+      row.innerHTML = `
+        <span class="day-label">${day}</span>
+        <input type="time" class="field-input" id="z-${day}-von1"  value="${d.von1||''}"  ${closed?'disabled':''} />
+        <input type="time" class="field-input" id="z-${day}-bis1"  value="${d.bis1||''}"  ${closed?'disabled':''} />
+        <input type="time" class="field-input pm-fields" id="z-${day}-von2"  value="${d.von2||''}"  ${closed?'disabled':''} placeholder="–" />
+        <input type="time" class="field-input pm-fields" id="z-${day}-bis2"  value="${d.bis2||''}"  ${closed?'disabled':''} placeholder="–" />
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--bark-light);white-space:nowrap;">
+          <input type="checkbox" id="z-${day}-closed" ${closed?'checked':''}
+            onchange="toggleDay('${day}', this.checked)"/> Geschlossen
+        </label>`;
+      container.appendChild(row);
+    });
+  }
+
+  function toggleDay(day, closed) {
+    ['von1','bis1','von2','bis2'].forEach(f => {
+      const el = document.getElementById(`z-${day}-${f}`);
+      if (el) el.disabled = closed;
+    });
+  }
+
+  // ── EVENTS ──
+  let events = [];
+
+  function buildEventList() {
+    const container = document.getElementById('event-list');
+    container.innerHTML = '';
+    events.forEach((ev, i) => {
+      const card = document.createElement('div');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <div>
+          <label class="field-label">Titel</label>
+          <input type="text" class="field-input" value="${ev.titel||''}"
+            oninput="events[${i}].titel=this.value" placeholder="z. B. Frühlingsangebote"/>
+        </div>
+        <div>
+          <label class="field-label">Beschreibung</label>
+          <input type="text" class="field-input" value="${ev.text||''}"
+            oninput="events[${i}].text=this.value" placeholder="Kurze Info für Kunden"/>
+        </div>
+        <div>
+          <label class="field-label">Datum / Zeitraum</label>
+          <input type="text" class="field-input" value="${ev.datum||''}"
+            oninput="events[${i}].datum=this.value" placeholder="März – Mai 2026"/>
+        </div>
+        <button class="event-remove" onclick="removeEvent(${i})" title="Entfernen">✕</button>`;
+      container.appendChild(card);
+    });
+  }
+
+  function addEvent() {
+    events.push({ titel: '', text: '', datum: '' });
+    buildEventList();
+  }
+
+  function removeEvent(i) {
+    events.splice(i, 1);
+    buildEventList();
+  }
+
+  // ── GALERIE INPUTS ──
+  function buildGalerieInputs() {
+    const saved = JSON.parse(localStorage.getItem('fab_bilder') || '{}');
+    const container = document.getElementById('galerie-inputs');
+    container.innerHTML = '';
+    for (let i = 1; i <= 7; i++) {
+      const url = saved[`galerie-${i}`] || '';
+      container.innerHTML += `
+        <div class="field-group">
+          <label class="field-label">Bild ${i}</label>
+          <input type="text" class="field-input" id="img-galerie-${i}" value="${url}" placeholder="https://...jpg"
+            oninput="updatePreview('galerie-${i}', this.value)"/>
+          <img class="image-preview" id="prev-galerie-${i}" src="${url}" alt="Galerie ${i}"
+            style="${url?'display:block;':''}"/>
+        </div>`;
+    }
+  }
+
+  function updatePreview(id, url) {
+    const img = document.getElementById('prev-' + id);
+    if (img) {
+      img.src = url;
+      img.style.display = url ? 'block' : 'none';
+    }
+  }
+
+  // Wire up main image previews
+  ['willkommen','laden-gross','laden-klein'].forEach(id => {
+    setTimeout(() => {
+      const input = document.getElementById('img-' + id);
+      if (input) input.addEventListener('input', () => updatePreview(id, input.value));
+    }, 100);
+  });
+
+  // ── SAVE ──
+  function savePanel(panel) {
+    const data = {};
+
+    if (panel === 'oeffnungszeiten') {
+      DAYS.forEach(day => {
+        data[day] = {
+          von1: document.getElementById(`z-${day}-von1`)?.value || '',
+          bis1: document.getElementById(`z-${day}-bis1`)?.value || '',
+          von2: document.getElementById(`z-${day}-von2`)?.value || '',
+          bis2: document.getElementById(`z-${day}-bis2`)?.value || '',
+          geschlossen: document.getElementById(`z-${day}-closed`)?.checked || false
+        };
+      });
+      localStorage.setItem('fab_zeiten', JSON.stringify(data));
+    }
+
+    if (panel === 'kontakt') {
+      ['telefon','email','strasse','plz','ort','maps'].forEach(f => {
+        data[f] = document.getElementById('k-' + f)?.value || '';
+      });
+      localStorage.setItem('fab_kontakt', JSON.stringify(data));
+    }
+
+    if (panel === 'texte') {
+      ['willkommen','laden','team','ware'].forEach(f => {
+        data[f] = document.getElementById('t-' + f)?.value || '';
+      });
+      localStorage.setItem('fab_texte', JSON.stringify(data));
+    }
+
+    if (panel === 'bilder') {
+      ['willkommen','laden-gross','laden-klein'].forEach(f => {
+        data[f] = document.getElementById('img-' + f)?.value || '';
+      });
+      for (let i = 1; i <= 7; i++) {
+        data[`galerie-${i}`] = document.getElementById(`img-galerie-${i}`)?.value || '';
+      }
+      localStorage.setItem('fab_bilder', JSON.stringify(data));
+    }
+
+    if (panel === 'events') {
+      localStorage.setItem('fab_events', JSON.stringify(events));
+    }
+
+    if (panel === 'impressum') {
+      ['name','telefon','adresse','email','extra'].forEach(f => {
+        data[f] = document.getElementById('imp-' + f)?.value || '';
+      });
+      localStorage.setItem('fab_impressum', JSON.stringify(data));
+    }
+
+    if (panel === 'dsgvo') {
+      ['verantwortlich','email','hosting'].forEach(f => {
+        data[f] = document.getElementById('ds-' + f)?.value || '';
+      });
+      localStorage.setItem('fab_dsgvo', JSON.stringify(data));
+    }
+
+    showToast('✓ Gespeichert!');
+  }
+
+  // ── LOAD ──
+  function loadAll() {
+    buildZeitenFields();
+    buildGalerieInputs();
+
+    // Kontakt
+    const k = JSON.parse(localStorage.getItem('fab_kontakt') || '{}');
+    ['telefon','email','strasse','plz','ort','maps'].forEach(f => {
+      const el = document.getElementById('k-' + f);
+      if (el && k[f]) el.value = k[f];
+    });
+
+    // Texte
+    const t = JSON.parse(localStorage.getItem('fab_texte') || '{}');
+    ['willkommen','laden','team','ware'].forEach(f => {
+      const el = document.getElementById('t-' + f);
+      if (el && t[f]) el.value = t[f];
+    });
+
+    // Bilder – main images
+    const b = JSON.parse(localStorage.getItem('fab_bilder') || '{}');
+    ['willkommen','laden-gross','laden-klein'].forEach(f => {
+      const el = document.getElementById('img-' + f);
+      if (el && b[f]) {
+        el.value = b[f];
+        updatePreview(f, b[f]);
+      }
+    });
+
+    // Events
+    events = JSON.parse(localStorage.getItem('fab_events') || '[]');
+    buildEventList();
+
+    // Impressum
+    const imp = JSON.parse(localStorage.getItem('fab_impressum') || '{}');
+    ['name','telefon','adresse','email','extra'].forEach(f => {
+      const el = document.getElementById('imp-' + f);
+      if (el && imp[f]) el.value = imp[f];
+    });
+
+    // DSGVO
+    const ds = JSON.parse(localStorage.getItem('fab_dsgvo') || '{}');
+    ['verantwortlich','email','hosting'].forEach(f => {
+      const el = document.getElementById('ds-' + f);
+      if (el && ds[f]) el.value = ds[f];
+    });
+  }
+
+  // ── PASSWORD CHANGE ──
+  function changePassword() {
+    const current = document.getElementById('pw-current').value;
+    const newPw   = document.getElementById('pw-new').value;
+    const repeat  = document.getElementById('pw-repeat').value;
+    const msg     = document.getElementById('pw-msg');
+    msg.style.display = 'block';
+
+    if (btoa(current) !== getPwHash()) {
+      msg.textContent = '❌ Aktuelles Passwort ist falsch.';
+      msg.style.color = 'var(--rose-deep)';
+      return;
+    }
+    if (newPw.length < 6) {
+      msg.textContent = '❌ Neues Passwort muss mindestens 6 Zeichen lang sein.';
+      msg.style.color = 'var(--rose-deep)';
+      return;
+    }
+    if (newPw !== repeat) {
+      msg.textContent = '❌ Passwörter stimmen nicht überein.';
+      msg.style.color = 'var(--rose-deep)';
+      return;
+    }
+    localStorage.setItem('fab_pw', btoa(newPw));
+    msg.textContent = '✓ Passwort wurde geändert.';
+    msg.style.color = 'var(--green)';
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-repeat').value = '';
+  }
+
+  // ── RESET ALL ──
+  function resetAll() {
+    if (!confirm('Wirklich alle gespeicherten Inhalte löschen? Das kann nicht rückgängig gemacht werden.')) return;
+    ['fab_zeiten','fab_kontakt','fab_texte','fab_bilder','fab_events','fab_impressum','fab_dsgvo']
+      .forEach(k => localStorage.removeItem(k));
+    loadAll();
+    showToast('↺ Alle Inhalte zurückgesetzt');
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Enter key on login
+  document.getElementById('pw-input').focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fein und blumig – Blumenladen in Steinfeld, Schleswig-Holstein</title>
+  <meta name="description" content="fein und blumig – Ihr Blumenladen in Steinfeld. Frische Sträuße, Türkränze, Brautschmuck, Pflanzen und Geschenke. Wohnen · Schenken · Floristik." />
+  <meta name="keywords" content="Blumenladen Steinfeld, Floristik Schleswig-Holstein, Sträuße, Brautschmuck, Türkränze, Pflanzen, Geschenke, fein und blumig" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.feinundblumig.de/" />
+  <meta property="og:title" content="fein und blumig – Blumenladen in Steinfeld" />
+  <meta property="og:description" content="Frische Blumen, Sträuße, Brautschmuck und Geschenke. Besuchen Sie uns in Steinfeld, Schleswig-Holstein." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.feinundblumig.de/" />
+  <meta property="og:locale" content="de_DE" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Florist",
+    "name": "fein und blumig",
+    "description": "Blumenladen mit frischen Sträußen, Türkränzen, Brautschmuck, Pflanzen und Geschenken in Steinfeld.",
+    "url": "https://www.feinundblumig.de",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Steinfeld",
+      "addressRegion": "Schleswig-Holstein",
+      "addressCountry": "DE"
+    },
+    "priceRange": "€€",
+    "hasMap": "https://maps.google.com/?q=Steinfeld,Schleswig-Holstein"
+  }
+  
+  // ── Modals ──
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open'), document.body.style.overflow = '';
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+
+  // ── localStorage content loader ──
+  function applyStoredContent() {
+    const z = JSON.parse(localStorage.getItem('fab_zeiten') || '{}');
+    const k = JSON.parse(localStorage.getItem('fab_kontakt') || '{}');
+    const t = JSON.parse(localStorage.getItem('fab_texte') || '{}');
+    const b = JSON.parse(localStorage.getItem('fab_bilder') || '{}');
+    const ev = JSON.parse(localStorage.getItem('fab_events') || '[]');
+    const imp = JSON.parse(localStorage.getItem('fab_impressum') || '{}');
+    const ds = JSON.parse(localStorage.getItem('fab_dsgvo') || '{}');
+
+    const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+
+    // Helper: set text of all elements matching selector
+    function setText(sel, val) {
+      if (!val) return;
+      document.querySelectorAll(sel).forEach(el => el.textContent = val);
+    }
+    function setHtml(sel, val) {
+      if (!val) return;
+      document.querySelectorAll(sel).forEach(el => el.innerHTML = val.replace(/\n/g,'<br/>'));
+    }
+    function setAttr(sel, attr, val) {
+      if (!val) return;
+      document.querySelectorAll(sel).forEach(el => el.setAttribute(attr, val));
+    }
+
+    // ── Öffnungszeiten banner ──
+    const bannerItems = document.querySelectorAll('.banner-item');
+    if (Object.keys(z).length) {
+      // Build compact banner groups: Mo-Do, Fr-Sa, So
+      const groups = [
+        { label: 'Mo – Do', days: ['Montag','Dienstag','Mittwoch','Donnerstag'] },
+        { label: 'Fr – Sa', days: ['Freitag','Samstag'] },
+        { label: 'So',      days: ['Sonntag'] }
+      ];
+      const bannerInner = document.querySelector('.banner-inner');
+      if (bannerInner) {
+        let html = '';
+        groups.forEach((g, i) => {
+          const sample = z[g.days[0]];
+          let timeStr = 'Geschlossen';
+          if (sample && !sample.geschlossen && sample.von && sample.bis) {
+            timeStr = sample.von.slice(0,5) + ' – ' + sample.bis.slice(0,5) + ' Uhr';
+          } else if (sample && !sample.geschlossen) {
+            timeStr = 'Geöffnet';
+          }
+          html += `<div class="banner-item"><span class="banner-label">${g.label}</span><span>${timeStr}</span></div>`;
+          if (i < groups.length - 1) html += '<div class="banner-sep" aria-hidden="true"></div>';
+        });
+        if (k.strasse || k.ort) {
+          const adresse = [k.strasse, (k.plz||'') + ' ' + (k.ort||'Steinfeld')].filter(Boolean).join(', ');
+          html += '<div class="banner-sep" aria-hidden="true"></div>';
+          html += `<div class="banner-item"><span>📍</span><a href="#kontakt">${adresse.trim()}</a></div>`;
+        }
+        bannerInner.innerHTML = html;
+      }
+
+      // Öffnungszeiten table (full page)
+      document.querySelectorAll('.zeiten-table tbody, .w-zeiten-table tbody').forEach(tbody => {
+        let rows = '';
+        DAYS.forEach(day => {
+          const d = z[day] || {};
+          const zeit = d.geschlossen ? 'Geschlossen' : (d.von && d.bis ? d.von.slice(0,5)+' – '+d.bis.slice(0,5)+' Uhr' : '–');
+          const cls = (day === 'Freitag' || day === 'Samstag') ? ' class="highlight"' : '';
+          rows += `<tr${cls}><td>${day}</td><td>${zeit}</td></tr>`;
+        });
+        tbody.innerHTML = rows;
+      });
+    }
+
+    // ── Kontakt ──
+    if (k.telefon) setText('[data-field="telefon"]', k.telefon);
+    if (k.email)   setText('[data-field="email"]', k.email);
+    if (k.strasse || k.ort) {
+      const adresse = [k.strasse, (k.plz||'') + ' ' + (k.ort||'')].filter(Boolean).join(', ');
+      setText('[data-field="adresse"]', adresse.trim());
+    }
+    if (k.maps) {
+      document.querySelectorAll('.map-box').forEach(box => {
+        box.innerHTML = `<iframe src="${k.maps}" width="100%" height="100%" style="border:0;border-radius:2px;" allowfullscreen="" loading="lazy"></iframe>`;
+        box.style.padding = '0';
+      });
+    }
+
+    // ── Texte ──
+    if (t.willkommen) setHtml('[data-field="text-willkommen"]', t.willkommen);
+    if (t.laden)      setHtml('[data-field="text-laden"]', t.laden);
+    if (t.team)       setHtml('[data-field="text-team"]', t.team);
+    if (t.ware)       setHtml('[data-field="text-ware"]', t.ware);
+
+    // ── Bilder ──
+    if (b.willkommen) {
+      document.querySelectorAll('[data-img="willkommen"]').forEach(el => {
+        if (el.tagName === 'IMG') { el.src = b.willkommen; el.style.objectFit='cover'; el.style.width='100%'; el.style.height='100%'; }
+        else el.innerHTML = `<img src="${b.willkommen}" alt="fein und blumig Laden" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"/>`;
+      });
+    }
+    if (b['laden-gross']) {
+      document.querySelectorAll('[data-img="laden-gross"]').forEach(el => {
+        el.innerHTML = `<img src="${b['laden-gross']}" alt="Der Hof in Steinfeld" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"/>`;
+      });
+    }
+    if (b['laden-klein']) {
+      document.querySelectorAll('[data-img="laden-klein"]').forEach(el => {
+        el.innerHTML = `<img src="${b['laden-klein']}" alt="Ladeninneres" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"/>`;
+      });
+    }
+    for (let i = 1; i <= 7; i++) {
+      if (b[`galerie-${i}`]) {
+        const el = document.querySelector(`[data-img="galerie-${i}"]`);
+        if (el) el.innerHTML = `<img src="${b['galerie-'+i]}" alt="Galerie Bild ${i}" style="width:100%;height:100%;object-fit:cover;"/>`;
+      }
+    }
+
+    // ── Events banner ──
+    if (ev.length > 0) {
+      const activeEvents = ev.filter(e => e.titel);
+      if (activeEvents.length > 0) {
+        const eventBanner = document.createElement('div');
+        eventBanner.style.cssText = 'background:var(--rose-soft);padding:0.8rem 2rem;text-align:center;';
+        eventBanner.innerHTML = activeEvents.map(e =>
+          `<span style="font-size:0.82rem;color:var(--bark);">🌸 <strong>${e.titel}</strong>${e.text?' – '+e.text:''}${e.datum?' ('+e.datum+')':''}</span>`
+        ).join('<span style="margin:0 1rem;color:var(--rose-mid);">·</span>');
+        document.querySelector('main')?.prepend(eventBanner);
+      }
+    }
+
+    // ── Impressum modal ──
+    if (Object.values(imp).some(v=>v)) {
+      const box = document.querySelector('#modal-impressum .modal-content');
+      if (box) {
+        box.innerHTML = `
+          <h3>Angaben gemäß § 5 TMG</h3>
+          <p>${imp.name||'–'}<br/>${imp.adresse||'–'}</p>
+          <h3>Kontakt</h3>
+          <p>Telefon: ${imp.telefon||'–'}<br/>E-Mail: ${imp.email||'–'}</p>
+          ${imp.extra ? '<h3>Weitere Angaben</h3><p>'+imp.extra+'</p>' : ''}
+          <h3>Haftungsausschluss</h3>
+          <p>Die Inhalte dieser Website wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>`;
+      }
+    }
+
+    // ── DSGVO modal ──
+    if (Object.values(ds).some(v=>v)) {
+      const box = document.querySelector('#modal-dsgvo .modal-content');
+      if (box) {
+        box.innerHTML = `
+          <h3>1. Verantwortliche Stelle</h3>
+          <p>${ds.verantwortlich||'–'}</p>
+          <h3>2. Erhebung und Verarbeitung personenbezogener Daten</h3>
+          <p>Personenbezogene Daten werden nur erhoben, wenn Sie uns diese im Rahmen des Kontaktformulars freiwillig mitteilen.</p>
+          <h3>3. Kontaktformular</h3>
+          <p>Wenn Sie uns per Kontaktformular eine Anfrage schicken, werden Ihre Angaben zur Bearbeitung der Anfrage gespeichert und nicht ohne Ihre Einwilligung weitergegeben.</p>
+          <h3>4. Ihre Rechte</h3>
+          <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung. Kontakt: ${ds.email||'–'}</p>
+          <h3>5. Cookies</h3>
+          <p>Diese Website verwendet keine Tracking-Cookies.</p>
+          <h3>6. Hosting</h3>
+          <p>${ds.hosting||'–'}</p>`;
+      }
+    }
+  }
+
+  // Run on load
+  applyStoredContent();
+
+</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --rose-pale:  #faf0f0;
+      --rose-soft:  #f2d5d5;
+      --rose-mid:   #d9a0a0;
+      --rose-deep:  #b56b6b;
+      --rose-dark:  #7a3f3f;
+      --cream:      #fdf8f4;
+      --bark:       #3a2e2e;
+      --bark-light: #6b5555;
+      --white:      #ffffff;
+      --shadow:     rgba(90,40,40,0.08);
+      --nav-h:      105px; /* navbar total height for scroll offset */
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      background: var(--cream);
+      color: var(--bark);
+      overflow-x: hidden;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(253,248,244,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rose-soft);
+    }
+    .nav-top {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 3rem;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.8rem;
+      text-decoration: none; background: none; border: none; cursor: pointer;
+    }
+    .nav-logo svg { width: 36px; height: 36px; flex-shrink: 0; }
+    .nav-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 400;
+      color: var(--bark); letter-spacing: 0.08em;
+    }
+
+    /* Tab/anchor bar */
+    .tab-bar {
+      display: flex;
+      border-top: 1px solid var(--rose-soft);
+      overflow-x: auto; scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; padding: 0.85rem 1.5rem;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem; font-weight: 400;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bark-light); cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      white-space: nowrap; min-height: 48px;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .tab-btn:hover { color: var(--rose-deep); }
+    .tab-btn.active {
+      color: var(--rose-deep);
+      border-bottom-color: var(--rose-deep);
+      background: rgba(181,107,107,0.04);
+    }
+
+    /* ─── SECTIONS ─── */
+    /* Offset anchor targets so they appear below sticky nav */
+    section[id] {
+      scroll-margin-top: var(--nav-h);
+    }
+
+    .section-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    /* ─── SHARED TYPOGRAPHY ─── */
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--rose-deep); margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 300; font-style: italic;
+      color: var(--bark); line-height: 1.2; margin-bottom: 1.2rem;
+    }
+    .divider { width: 40px; height: 1px; background: var(--rose-mid); margin-bottom: 2rem; }
+    .body-text { font-size: 0.92rem; line-height: 1.9; color: var(--bark-light); max-width: 600px; }
+
+    /* ─── HERO ─── */
+    #home {
+      background: var(--rose-pale);
+      position: relative; overflow: hidden;
+      min-height: calc(100vh - var(--nav-h));
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .hero-bg-blobs {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 55% at 70% 35%, rgba(217,160,160,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 45% at 20% 75%, rgba(242,213,213,0.28) 0%, transparent 50%);
+    }
+    .petal { position: absolute; border-radius: 50% 0; background: var(--rose-deep); opacity: 0.1; }
+    .p1 { width:220px;height:220px;top:-50px;right:8%;transform:rotate(30deg); }
+    .p2 { width:140px;height:140px;bottom:10%;left:4%;transform:rotate(-20deg);background:var(--rose-mid); }
+    .p3 { width:70px;height:70px;top:25%;left:12%;transform:rotate(60deg);opacity:0.07; }
+    .hero-content { position: relative; z-index: 2; padding: 4rem 2rem; }
+    .hero-wreath { display:flex; justify-content:center; margin-bottom:1.5rem; }
+    .hero-wreath svg { width:90px;height:90px;animation:spin-slow 20s linear infinite; }
+    @keyframes spin-slow { to { transform:rotate(360deg); } }
+    .hero-eyebrow {
+      font-size: 0.72rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--rose-deep); margin-bottom: 0.8rem;
+    }
+    h1.hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 10vw, 6.5rem);
+      font-weight: 300; font-style: italic;
+      color: var(--bark); line-height: 1.05; margin-bottom: 1.2rem;
+    }
+    .hero-tagline {
+      font-size: 0.82rem; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--bark-light); margin-bottom: 2.5rem;
+    }
+    .hero-tagline span { margin: 0 0.8rem; color: var(--rose-mid); }
+    .hero-cta {
+      display: inline-block; padding: 0.9rem 2.4rem;
+      background: var(--rose-deep); color: white;
+      font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
+      border-radius: 2px; border: none; cursor: pointer;
+      font-family: 'Jost', sans-serif; transition: background 0.3s, transform 0.2s;
+      text-decoration: none;
+    }
+    .hero-cta:hover { background: var(--rose-dark); transform: translateY(-2px); }
+
+    /* ─── ÖFFNUNGSZEITEN BANNER ─── */
+    .oeffnungszeiten-banner { background: var(--bark); }
+    .banner-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: center;
+      gap: 2rem; flex-wrap: wrap;
+    }
+    .banner-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; color: rgba(253,248,244,0.85);
+    }
+    .banner-label {
+      font-size: 0.65rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--rose-mid);
+    }
+    .banner-sep { width: 1px; height: 1.1rem; background: rgba(255,255,255,0.15); }
+    .banner-item a { color: var(--rose-soft); text-decoration: none; transition: color 0.2s; }
+    .banner-item a:hover { color: white; }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(58,46,46,0.55); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--cream); border-radius: 2px;
+      max-width: 680px; width: 100%; max-height: 80vh; overflow-y: auto;
+      padding: 3rem; position: relative;
+      box-shadow: 0 30px 60px rgba(58,46,46,0.2);
+    }
+    .modal-close {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      background: none; border: none; cursor: pointer;
+      font-size: 1.3rem; color: var(--bark-light); transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--rose-deep); }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 300; font-style: italic;
+      color: var(--bark); margin-bottom: 0.5rem;
+    }
+    .modal-divider { width: 40px; height: 1px; background: var(--rose-mid); margin-bottom: 1.5rem; }
+    .modal-content { font-size: 0.88rem; line-height: 1.8; color: var(--bark-light); }
+    .modal-content h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 500; color: var(--bark); margin: 1.5rem 0 0.4rem;
+    }
+    .modal-content p { margin-bottom: 0.8rem; }
+    .modal-placeholder {
+      background: var(--rose-soft); border-radius: 2px;
+      padding: 0.1rem 0.4rem; font-style: italic; color: var(--rose-dark);
+    }
+
+    /* ─── WILLKOMMEN ─── */
+    #willkommen { background: var(--white); }
+    .willkommen-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center; margin-bottom: 4rem;
+    }
+    .bild-wrap { position: relative; padding-bottom: 1.5rem; padding-right: 1.5rem; }
+    .bild-box {
+      width: 100%; aspect-ratio: 4/3;
+      background: linear-gradient(135deg, var(--rose-soft), var(--rose-pale));
+      border-radius: 2px; display: flex; align-items: center; justify-content: center;
+    }
+    .bild-placeholder {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      color: var(--rose-mid); font-size: 0.88rem; text-align: center; padding: 1rem;
+    }
+    .bild-badge {
+      position: absolute; bottom: -0.2rem; right: -0.2rem;
+      width: 100px; height: 100px; background: var(--rose-deep); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      color: white; font-family: 'Cormorant Garamond', serif;
+      font-size: 0.72rem; font-style: italic; line-height: 1.4; padding: 0.8rem;
+    }
+    .willkommen-bottom {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      padding-top: 3rem; border-top: 1px solid var(--rose-soft);
+    }
+    .w-zeiten-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .w-zeiten-table tr { border-bottom: 1px solid var(--rose-soft); }
+    .w-zeiten-table td { padding: 0.75rem 0; font-size: 0.88rem; color: var(--bark-light); }
+    .w-zeiten-table td:last-child { text-align: right; color: var(--bark); }
+    .w-zeiten-table .highlight td { color: var(--bark); font-weight: 400; }
+
+    /* ─── FORMS (shared) ─── */
+    .form-group { margin-bottom: 1.2rem; }
+    .form-label {
+      display: block; font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--bark-light); margin-bottom: 0.4rem;
+    }
+    .form-input, .form-textarea {
+      width: 100%; padding: 0.8rem 1rem;
+      border: 1px solid var(--rose-soft); border-radius: 2px;
+      background: var(--cream); font-family: 'Jost', sans-serif;
+      font-size: 0.88rem; color: var(--bark); outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--rose-deep); }
+    .form-textarea { min-height: 110px; resize: vertical; }
+    .form-submit {
+      width: 100%; padding: 0.9rem;
+      background: var(--rose-deep); color: white; border: none; border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: 0.78rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.3s, transform 0.2s;
+    }
+    .form-submit:hover { background: var(--rose-dark); transform: translateY(-1px); }
+
+    /* ─── LEISTUNGEN ─── */
+    #leistungen { background: var(--rose-pale); }
+    .karten-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .karte {
+      background: var(--white); padding: 2.2rem 1.8rem;
+      border-radius: 2px; position: relative; overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .karte::before {
+      content:''; position: absolute; top:0;left:0;right:0;height:2px;
+      background: var(--rose-soft); transition: background 0.3s;
+    }
+    .karte:hover { transform: translateY(-5px); box-shadow: 0 18px 36px var(--shadow); }
+    .karte:hover::before { background: var(--rose-deep); }
+    .karte-icon { font-size: 1.7rem; margin-bottom: 1rem; }
+    .karte-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;
+      font-weight: 500; color: var(--bark); margin-bottom: 0.5rem;
+    }
+    .karte-text { font-size: 0.82rem; line-height: 1.7; color: var(--bark-light); }
+
+    /* ─── DER LADEN ─── */
+    #laden { background: var(--white); }
+    .laden-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .laden-bild-stack { position: relative; padding-bottom: 2.5rem; padding-right: 2.5rem; }
+    .laden-bild-gross {
+      width: 100%; aspect-ratio: 3/4;
+      background: linear-gradient(145deg, var(--rose-soft), var(--rose-pale));
+      border-radius: 2px; display: flex; align-items: center; justify-content: center;
+    }
+    .laden-bild-klein {
+      position: absolute; bottom:0; right:0; width:52%; aspect-ratio:1;
+      background: linear-gradient(145deg, var(--rose-mid), var(--rose-soft));
+      border-radius: 2px; border: 6px solid var(--white);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .info-block { margin-bottom: 2rem; }
+    .info-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-weight: 500; color: var(--bark); margin-bottom: 0.5rem;
+    }
+    .nachhaltig-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.1rem; background: var(--rose-pale);
+      border: 1px solid var(--rose-soft); border-radius: 2px;
+      font-size: 0.8rem; color: var(--bark-light);
+    }
+
+    /* ─── GALERIE ─── */
+    #galerie { background: var(--rose-pale); }
+    .galerie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .galerie-item {
+      background: linear-gradient(135deg, var(--rose-soft), var(--rose-pale));
+      border-radius: 2px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer;
+      transition: transform 0.35s, box-shadow 0.35s; overflow: hidden;
+    }
+    .galerie-item:hover { transform: scale(1.02); box-shadow: 0 14px 32px var(--shadow); }
+    .galerie-item:nth-child(1){aspect-ratio:1;}
+    .galerie-item:nth-child(2){aspect-ratio:3/4;grid-row:span 2;}
+    .galerie-item:nth-child(3){aspect-ratio:4/3;}
+    .galerie-item:nth-child(4){aspect-ratio:4/3;}
+    .galerie-item:nth-child(5){aspect-ratio:1;}
+    .galerie-item:nth-child(6){aspect-ratio:3/4;}
+    .galerie-item:nth-child(7){aspect-ratio:4/3;grid-column:span 2;}
+    .galerie-placeholder {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 0.8rem; color: var(--rose-mid);
+    }
+
+    /* ─── ÖFFNUNGSZEITEN ─── */
+    #zeiten { background: var(--bark); }
+    #zeiten .section-label { color: var(--rose-mid); }
+    #zeiten .section-title { color: var(--rose-pale); }
+    #zeiten .divider { background: var(--rose-deep); }
+    .zeiten-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .zeiten-table { width:100%; border-collapse:collapse; }
+    .zeiten-table tr { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .zeiten-table td { padding: 0.85rem 0; font-size: 0.88rem; color: rgba(253,248,244,0.7); }
+    .zeiten-table td:last-child { text-align:right; color: var(--rose-soft); }
+    .zeiten-table .highlight td { color: var(--cream); }
+    .kontakt-liste { display: flex; flex-direction: column; gap: 1.5rem; }
+    .kontakt-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .k-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .k-label { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose-mid); margin-bottom: 0.2rem; }
+    .k-text { font-size: 0.88rem; line-height: 1.7; color: rgba(253,248,244,0.72); }
+
+    /* ─── KONTAKT ─── */
+    #kontakt { background: var(--white); }
+    .kontakt-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; }
+    .map-box {
+      width:100%; aspect-ratio:4/3;
+      background:var(--rose-pale); border:1px solid var(--rose-soft);
+      border-radius:2px; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem;
+    }
+    .map-placeholder-text { font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--rose-mid); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--rose-pale); padding: 2.5rem 2rem;
+      text-align: center; border-top: 1px solid var(--rose-soft);
+    }
+    .footer-logo { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-style:italic; color:var(--bark); margin-bottom:0.3rem; }
+    .footer-tagline { font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--rose-mid); margin-bottom:0.6rem; }
+    .footer-copy { font-size:0.72rem; color:var(--rose-mid); }
+
+    .footer-legal-btn {
+      background: none; border: none; cursor: pointer;
+      font-family: 'Jost', sans-serif; font-size: 0.72rem;
+      color: var(--rose-mid); text-decoration: underline;
+      text-underline-offset: 3px; transition: color 0.2s; padding: 0;
+    }
+    .footer-legal-btn:hover { color: var(--bark); }
+
+    /* ─── REVEAL ANIMATION ─── */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      :root { --nav-h: 95px; }
+      .nav-top { padding: 1rem 1.5rem; }
+      .tab-btn { padding: 0.75rem 1rem; font-size: 0.7rem; }
+      .willkommen-grid, .willkommen-bottom,
+      .laden-grid, .zeiten-layout, .kontakt-layout { grid-template-columns:1fr; gap:2.5rem; }
+      .karten-grid { grid-template-columns:1fr 1fr; }
+      .galerie-grid { grid-template-columns:1fr 1fr; }
+      .galerie-item:nth-child(2){grid-row:span 1;aspect-ratio:1;}
+      .galerie-item:nth-child(7){grid-column:span 1;}
+      .laden-bild-stack { padding-bottom:1.8rem; padding-right:1.8rem; }
+      .section-inner { padding: 3.5rem 1.5rem; }
+    }
+    @media (max-width: 560px) {
+      :root { --nav-h: 88px; }
+      .tab-btn { padding: 0.7rem 0.85rem; font-size: 0.65rem; letter-spacing: 0.06em; }
+      .karten-grid { grid-template-columns:1fr; }
+      .galerie-grid { grid-template-columns:1fr; }
+      .galerie-item { aspect-ratio:4/3 !important; grid-row:span 1 !important; grid-column:span 1 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- STICKY NAV -->
+<nav aria-label="Hauptnavigation">
+  <div class="nav-top">
+    <a href="#home" class="nav-logo" aria-label="fein und blumig – zur Startseite">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="40" cy="40" r="28" stroke="#b56b6b" stroke-width="1.2" fill="none"/>
+        <g fill="#d9a0a0" opacity="0.7">
+          <path d="M40 12 Q44 8 48 12 Q44 16 40 12Z"/>
+          <path d="M40 12 Q36 8 32 12 Q36 16 40 12Z"/>
+          <path d="M67 40 Q71 36 67 32 Q63 36 67 40Z"/>
+          <path d="M40 68 Q44 72 48 68 Q44 64 40 68Z"/>
+          <path d="M40 68 Q36 72 32 68 Q36 64 40 68Z"/>
+          <path d="M13 40 Q9 44 13 48 Q17 44 13 40Z"/>
+        </g>
+        <circle cx="40" cy="40" r="12" stroke="#d9a0a0" stroke-width="0.8" fill="none"/>
+      </svg>
+      <span class="nav-logo-text">fein und blumig</span>
+    </a>
+  </div>
+  <div class="tab-bar" role="navigation" aria-label="Seitennavigation">
+    <a class="tab-btn active" href="#home">Home</a>
+    <a class="tab-btn" href="#willkommen">Willkommen</a>
+    <a class="tab-btn" href="#leistungen">Leistungen</a>
+    <a class="tab-btn" href="#laden">Der Laden</a>
+    <a class="tab-btn" href="#galerie">Galerie</a>
+    <a class="tab-btn" href="#zeiten">Öffnungszeiten</a>
+    <a class="tab-btn" href="#kontakt">Kontakt</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HOME -->
+  <section id="home" aria-label="Startseite">
+    <div class="hero-bg-blobs" aria-hidden="true"></div>
+    <div class="petal p1" aria-hidden="true"></div>
+    <div class="petal p2" aria-hidden="true"></div>
+    <div class="petal p3" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-wreath" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="36" stroke="#b56b6b" stroke-width="1" fill="none" stroke-dasharray="3 4"/>
+          <g fill="#d9a0a0" opacity="0.75">
+            <path d="M50 14 Q54 10 58 14 Q54 18 50 14Z"/>
+            <path d="M50 14 Q46 10 42 14 Q46 18 50 14Z"/>
+            <path d="M86 50 Q90 46 86 42 Q82 46 86 50Z"/>
+            <path d="M50 86 Q54 90 58 86 Q54 82 50 86Z"/>
+            <path d="M50 86 Q46 90 42 86 Q46 82 50 86Z"/>
+            <path d="M14 50 Q10 54 14 58 Q18 54 14 50Z"/>
+          </g>
+          <circle cx="50" cy="50" r="18" stroke="#d9a0a0" stroke-width="0.8" fill="none"/>
+        </svg>
+      </div>
+      <p class="hero-eyebrow">Steinfeld · Schleswig-Holstein</p>
+      <h1 class="hero-title">fein und blumig</h1>
+      <p class="hero-tagline">Wohnen <span aria-hidden="true">·</span> Schenken <span aria-hidden="true">·</span> Floristik</p>
+      <a class="hero-cta" href="#kontakt">Jetzt vorbeikommen</a>
+    </div>
+  </section>
+
+
+  <!-- ÖFFNUNGSZEITEN BANNER -->
+  <div class="oeffnungszeiten-banner" aria-label="Öffnungszeiten im Überblick">
+    <div class="banner-inner">
+      <div class="banner-item">
+        <span class="banner-label">Mo – Do</span>
+        <span>Bitte eintragen</span>
+      </div>
+      <div class="banner-sep" aria-hidden="true"></div>
+      <div class="banner-item">
+        <span class="banner-label">Fr – Sa</span>
+        <span>Bitte eintragen</span>
+      </div>
+      <div class="banner-sep" aria-hidden="true"></div>
+      <div class="banner-item">
+        <span class="banner-label">So</span>
+        <span>Geschlossen</span>
+      </div>
+      <div class="banner-sep" aria-hidden="true"></div>
+      <div class="banner-item">
+        <span>📍</span><a href="#kontakt">Steinfeld, Schleswig-Holstein</a>
+      </div>
+    </div>
+  </div>
+  <!-- WILLKOMMEN -->
+  <section id="willkommen" aria-label="Willkommen">
+    <div class="section-inner">
+      <div class="willkommen-grid">
+        <div class="bild-wrap reveal">
+          <div class="bild-box" data-img="willkommen">
+            <span class="bild-placeholder">Hier Ihr Ladenbild einfügen</span>
+          </div>
+          <div class="bild-badge" aria-hidden="true">frisch angeliefert</div>
+        </div>
+        <div class="reveal">
+          <p class="section-label">Herzlich Willkommen</p>
+          <h2 class="section-title">Schön, dass Sie da sind</h2>
+          <div class="divider" aria-hidden="true"></div>
+          <p class="body-text" data-field="text-willkommen">Jeder Artikel unseres Sortiments wird mit Sorgfalt ausgewählt. Deshalb bedeutet es uns sehr viel, dass Sie mit der Ware zufrieden sind.</p>
+          <p class="body-text" style="margin-top:1rem;">Unsere Topf- und Schnittblumen bekommen wir frisch angeliefert. Wir hoffen, dass Sie glücklich sind über Ihre neuen feinen Dinge und Blumen.</p>
+          <p class="body-text" style="margin-top:1rem;">Blumen zu verschenken ist eine traditionelle Geste. Wir beraten Sie gerne und fertigen nach Ihren Wünschen individuelle Werkstücke an.</p>
+        </div>
+      </div>
+
+      <!-- Öffnungszeiten + Kontakt -->
+      <div class="willkommen-bottom">
+        <div class="reveal">
+          <p class="section-label">Wann Sie uns finden</p>
+          <h2 class="section-title">Öffnungszeiten</h2>
+          <div class="divider" aria-hidden="true"></div>
+          <table class="w-zeiten-table" aria-label="Öffnungszeiten fein und blumig">
+            <tbody>
+              <tr><td>Montag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Dienstag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Mittwoch</td><td>Bitte eintragen</td></tr>
+              <tr><td>Donnerstag</td><td>Bitte eintragen</td></tr>
+              <tr class="highlight"><td>Freitag</td><td>Bitte eintragen</td></tr>
+              <tr class="highlight"><td>Samstag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Sonntag</td><td>Geschlossen</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:1.5rem;font-size:0.8rem;color:var(--bark-light);">📍 Steinfeld, Schleswig-Holstein</p>
+        </div>
+        <div class="reveal">
+          <p class="section-label">Schreiben Sie uns</p>
+          <h2 class="section-title">Schnellkontakt</h2>
+          <div class="divider" aria-hidden="true"></div>
+          <form onsubmit="handleForm(event)" aria-label="Schnellkontaktformular">
+            <div class="form-group">
+              <label class="form-label" for="w-name">Ihr Name</label>
+              <input id="w-name" type="text" class="form-input" placeholder="Maria Müller" required autocomplete="name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="w-email">E-Mail</label>
+              <input id="w-email" type="email" class="form-input" placeholder="maria@beispiel.de" required autocomplete="email"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="w-msg">Nachricht</label>
+              <textarea id="w-msg" class="form-textarea" placeholder="Ich würde gerne …" required></textarea>
+            </div>
+            <button type="submit" class="form-submit">Nachricht senden</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEISTUNGEN -->
+  <section id="leistungen" aria-label="Leistungen">
+    <div class="section-inner">
+      <p class="section-label reveal">Was wir anbieten</p>
+      <h2 class="section-title reveal">Unsere Leistungen</h2>
+      <div class="divider reveal" aria-hidden="true"></div>
+      <div class="karten-grid">
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">💐</div><h3 class="karte-title">Sträuße & Schnittblumen</h3><p class="karte-text">Frisch angelieferte Schnittblumen aus ganz Europa – individuell gebunden nach Ihren Wünschen.</p></div>
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">🌿</div><h3 class="karte-title">Türkränze & Werkstücke</h3><p class="karte-text">Handgefertigte Kränze und Dekorationen – die Natur dient uns stets als Vorbild.</p></div>
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">🪴</div><h3 class="karte-title">Pflanzen für Innen & Außen</h3><p class="karte-text">Topfpflanzen und Außenbepflanzungen, schick dekoriert für jeden Anlass.</p></div>
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">🎁</div><h3 class="karte-title">Geschenke & Präsente</h3><p class="karte-text">Schöne Dinge für Haus und Garten – ob Geburtstag, Hochzeit oder Genesung.</p></div>
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">💍</div><h3 class="karte-title">Brautschmuck</h3><p class="karte-text">Floraler Brautschmuck für Ihren schönsten Tag – zart, persönlich und unvergesslich.</p></div>
+        <div class="karte reveal"><div class="karte-icon" aria-hidden="true">🕯️</div><h3 class="karte-title">Tischdekorationen</h3><p class="karte-text">Florale Tischdekorationen für Feiern, Hochzeiten und besondere Momente.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DER LADEN -->
+  <section id="laden" aria-label="Der Laden">
+    <div class="section-inner">
+      <div class="laden-grid">
+        <div class="laden-bild-stack reveal">
+          <div class="laden-bild-gross" data-img="laden-gross"><span class="bild-placeholder">Der Hof in Steinfeld (1924)</span></div>
+          <div class="laden-bild-klein" data-img="laden-klein"><span class="bild-placeholder" style="font-size:0.75rem;">Ladeninneres</span></div>
+        </div>
+        <div>
+          <p class="section-label reveal">Über uns</p>
+          <h2 class="section-title reveal">Der Laden</h2>
+          <div class="divider reveal" aria-hidden="true"></div>
+          <div class="info-block reveal">
+            <h3 class="info-title">Der Laden</h3>
+            <p class="body-text" data-field="text-laden">Der Laden ist in einem ehemaligen Stall hier bei uns auf dem Hof in Steinfeld eingerichtet. Als gelernte Floristin und Gärtnerin fertige ich Sträuße aus frischen Schnittblumen und Werkstücke wie z.&thinsp;B. Türkränze. Ebenso gibt es Pflanzen für innen und außen schick dekoriert. Als Vorbild dient stets die Natur.</p>
+          </div>
+          <div class="info-block reveal">
+            <h3 class="info-title">Unsere Ware</h3>
+            <p class="body-text" data-field="text-ware">Schöne Dinge für Haus und Garten, die Freude machen. Wir legen Wert auf frische und hochwertige Waren, die zum Teil aus Dänemark, Schweden, Frankreich, Italien und den Niederlanden kommen.</p>
+          </div>
+          <div class="info-block reveal">
+            <h3 class="info-title">Das Team</h3>
+            <p class="body-text" data-field="text-team">Blumenverliebte Floristinnen, die Kreativität und den Umgang mit Kunden lieben und dabei das Besondere im Blick haben.</p>
+          </div>
+          <span class="nachhaltig-badge reveal">🌿 Keine Folienverpackung – wir denken nachhaltig</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERIE -->
+  <section id="galerie" aria-label="Bildergalerie">
+    <div class="section-inner">
+      <p class="section-label reveal">Eindrücke</p>
+      <h2 class="section-title reveal">Bildergalerie</h2>
+      <div class="divider reveal" aria-hidden="true"></div>
+      <div class="galerie-grid">
+        <div class="galerie-item reveal" data-img="galerie-1"><span class="galerie-placeholder">Bild 1</span></div>
+        <div class="galerie-item reveal" data-img="galerie-2"><span class="galerie-placeholder">Bild 2</span></div>
+        <div class="galerie-item reveal" data-img="galerie-3"><span class="galerie-placeholder">Bild 3</span></div>
+        <div class="galerie-item reveal" data-img="galerie-4"><span class="galerie-placeholder">Bild 4</span></div>
+        <div class="galerie-item reveal" data-img="galerie-5"><span class="galerie-placeholder">Bild 5</span></div>
+        <div class="galerie-item reveal" data-img="galerie-6"><span class="galerie-placeholder">Bild 6</span></div>
+        <div class="galerie-item reveal" data-img="galerie-7"><span class="galerie-placeholder">Bild 7</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÖFFNUNGSZEITEN -->
+  <section id="zeiten" aria-label="Öffnungszeiten">
+    <div class="section-inner">
+      <div class="zeiten-layout">
+        <div class="reveal">
+          <p class="section-label">Wann Sie uns finden</p>
+          <h2 class="section-title">Öffnungszeiten</h2>
+          <div class="divider" aria-hidden="true"></div>
+          <table class="zeiten-table" aria-label="Öffnungszeiten">
+            <tbody>
+              <tr><td>Montag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Dienstag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Mittwoch</td><td>Bitte eintragen</td></tr>
+              <tr><td>Donnerstag</td><td>Bitte eintragen</td></tr>
+              <tr class="highlight"><td>Freitag</td><td>Bitte eintragen</td></tr>
+              <tr class="highlight"><td>Samstag</td><td>Bitte eintragen</td></tr>
+              <tr><td>Sonntag</td><td>Geschlossen</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <address style="font-style:normal;" class="reveal">
+          <p class="section-label">So erreichen Sie uns</p>
+          <h2 class="section-title" style="color:var(--rose-pale);margin-bottom:1.5rem;">Kontaktdaten</h2>
+          <div class="kontakt-liste">
+            <div class="kontakt-item">
+              <span class="k-icon" aria-hidden="true">📍</span>
+              <div><p class="k-label">Adresse</p><p class="k-text" data-field="adresse">Steinfeld, Schleswig-Holstein</p></div>
+            </div>
+            <div class="kontakt-item">
+              <span class="k-icon" aria-hidden="true">📞</span>
+              <div><p class="k-label">Telefon</p><p class="k-text" data-field="telefon">Bitte Nummer eintragen</p></div>
+            </div>
+            <div class="kontakt-item">
+              <span class="k-icon" aria-hidden="true">✉️</span>
+              <div><p class="k-label">E-Mail</p><p class="k-text" data-field="email">Bitte E-Mail eintragen</p></div>
+            </div>
+          </div>
+        </address>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section id="kontakt" aria-label="Kontakt">
+    <div class="section-inner">
+      <div class="kontakt-layout">
+        <div class="reveal">
+          <p class="section-label">Schreiben Sie uns</p>
+          <h2 class="section-title">Kontakt</h2>
+          <div class="divider" aria-hidden="true"></div>
+          <form onsubmit="handleForm(event)" aria-label="Kontaktformular">
+            <div class="form-group">
+              <label class="form-label" for="k-name">Ihr Name</label>
+              <input id="k-name" type="text" class="form-input" placeholder="Maria Müller" required autocomplete="name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="k-email">E-Mail-Adresse</label>
+              <input id="k-email" type="email" class="form-input" placeholder="maria@beispiel.de" required autocomplete="email"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="k-msg">Ihre Nachricht</label>
+              <textarea id="k-msg" class="form-textarea" placeholder="Ich würde gerne …" required></textarea>
+            </div>
+            <button type="submit" class="form-submit">Nachricht senden</button>
+          </form>
+        </div>
+        <div class="reveal">
+          <div class="map-box" role="img" aria-label="Kartenansicht Steinfeld">
+            <span class="map-placeholder-text">Google Maps – Steinfeld</span>
+          </div>
+          <p class="body-text" style="font-size:0.85rem;">Ob Hochzeit, Geburtstag, Genesung, für ein Dankeschön, Tischschmuck oder vieles mehr – kommen Sie gerne vorbei. Wir freuen uns auf Sie!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="footer-logo">fein und blumig</p>
+  <p class="footer-tagline">Wohnen · Schenken · Floristik</p>
+  <p class="footer-copy">© 2026 fein und blumig · Steinfeld, Schleswig-Holstein</p>
+  <p style="margin-top:0.8rem; font-size:0.72rem;">
+    <button class="footer-legal-btn" onclick="openModal('impressum')">Impressum</button>
+    <span style="color:var(--rose-soft); margin:0 0.5rem;">·</span>
+    <button class="footer-legal-btn" onclick="openModal('dsgvo')">Datenschutz</button>
+  </p>
+</footer>
+
+<!-- IMPRESSUM MODAL -->
+<div class="modal-overlay" id="modal-impressum" role="dialog" aria-modal="true" aria-labelledby="impressum-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('impressum')" aria-label="Schließen">✕</button>
+    <h2 class="modal-title" id="impressum-title">Impressum</h2>
+    <div class="modal-divider"></div>
+    <div class="modal-content">
+      <h3>Angaben gemäß § 5 TMG</h3>
+      <p>
+        <span class="modal-placeholder">Vollständiger Name</span><br/>
+        <span class="modal-placeholder">Straße und Hausnummer</span><br/>
+        <span class="modal-placeholder">PLZ</span> Steinfeld, Schleswig-Holstein
+      </p>
+      <h3>Kontakt</h3>
+      <p>
+        Telefon: <span class="modal-placeholder">Telefonnummer eintragen</span><br/>
+        E-Mail: <span class="modal-placeholder">E-Mail-Adresse eintragen</span>
+      </p>
+      <h3>Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)</h3>
+      <p><span class="modal-placeholder">Name und Adresse eintragen</span></p>
+      <h3>Haftungsausschluss</h3>
+      <p>Die Inhalte dieser Website wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DATENSCHUTZ MODAL -->
+<div class="modal-overlay" id="modal-dsgvo" role="dialog" aria-modal="true" aria-labelledby="dsgvo-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('dsgvo')" aria-label="Schließen">✕</button>
+    <h2 class="modal-title" id="dsgvo-title">Datenschutzerklärung</h2>
+    <div class="modal-divider"></div>
+    <div class="modal-content">
+      <h3>1. Verantwortliche Stelle</h3>
+      <p><span class="modal-placeholder">Name und Adresse der verantwortlichen Person eintragen</span></p>
+      <h3>2. Erhebung und Verarbeitung personenbezogener Daten</h3>
+      <p>Personenbezogene Daten werden nur erhoben, wenn Sie uns diese im Rahmen des Kontaktformulars freiwillig mitteilen. Wir verwenden Ihre Daten ausschließlich zur Bearbeitung Ihrer Anfrage.</p>
+      <h3>3. Kontaktformular</h3>
+      <p>Wenn Sie uns per Kontaktformular eine Anfrage schicken, werden Ihre Angaben aus dem Formular zur Bearbeitung der Anfrage bei uns gespeichert. Diese Daten werden nicht ohne Ihre Einwilligung weitergegeben.</p>
+      <h3>4. Ihre Rechte</h3>
+      <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten. Wenden Sie sich dafür an: <span class="modal-placeholder">E-Mail-Adresse eintragen</span></p>
+      <h3>5. Cookies</h3>
+      <p>Diese Website verwendet keine Tracking-Cookies. Es werden ausschließlich technisch notwendige Funktionen verwendet.</p>
+      <h3>6. Hosting</h3>
+      <p><span class="modal-placeholder">Hosting-Anbieter eintragen (z. B. Netlify, IONOS etc.) und ggf. deren Datenschutzhinweis verlinken</span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Active tab highlight on scroll ──
+  const sections = document.querySelectorAll('section[id]');
+  const tabBtns  = document.querySelectorAll('.tab-btn');
+
+  function setActive(id) {
+    tabBtns.forEach(btn => {
+      const active = btn.getAttribute('href') === '#' + id;
+      btn.classList.toggle('active', active);
+      if (active) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, {
+    rootMargin: '-40% 0px -55% 0px', // fires when section is roughly centred in viewport
+    threshold: 0
+  });
+  sections.forEach(s => observer.observe(s));
+
+  // ── Scroll reveal ──
+  const reveals = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => revealObserver.observe(el));
+
+  // ── Form handler ──
+  function handleForm(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.form-submit');
+    btn.textContent = '✓ Nachricht gesendet!';
+    btn.style.background = '#4a7a5a';
+    setTimeout(() => {
+      btn.textContent = 'Nachricht senden';
+      btn.style.background = '';
+      e.target.reset();
+    }, 3000);
+  }
+</script>
+</body>
+</html>
